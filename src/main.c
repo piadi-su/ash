@@ -3,11 +3,18 @@
 #include <unistd.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <signal.h>
+
 
 //my files
-#include "xwin.h"
+#include "bar.h"
+#include "config.h"
 
 
+
+volatile sig_atomic_t running = 1;
+
+void handle_sigint(int sig);
 
 
 int main(void)
@@ -32,18 +39,24 @@ int main(void)
 	//create root window/desktop
 	Window root = RootWindow(dpy, screen);
 
+	//PER VALGRIND
+	signal(SIGINT, handle_sigint); 
+
 	// per non fare coprire da altre finestre
 	XSetWindowAttributes attrs = {0};
+	
 
+	//get the width of the screen
 	int width = DisplayWidth(dpy, screen);
 
+	//create the window
 	Window win = XCreateWindow(
 			dpy,
 			root,
 			0,
 			0,
 			width,
-			24,
+			BAR_HEIGHT,
 			0,
 			CopyFromParent,
 			InputOutput,
@@ -52,13 +65,19 @@ int main(void)
 			&attrs
 			);
 	
+	//make it not in tyle mode reserv the pixel size 
 	set_dock_properties(dpy, win, width);
-
+	
+	// say what kind of input the bar can recive
 	XSelectInput(dpy, win, ExposureMask | KeyPressMask);
+	
+	//inizialize the font 
+	init_font(dpy, win, screen);
 
+	//set in wait the window and make it visible 
 	XMapWindow(dpy, win);
 	
-	
+	//create the thing to draw stuff on bar
 	GC gc = XCreateGC(
 			dpy,
 			win,
@@ -66,23 +85,32 @@ int main(void)
 			NULL
 			);
 
-
-
-	while (1)
+	
+	//bar cycle
+	while (running)
 	{
 		while (XPending(dpy))
 		{
 			XNextEvent(dpy, &ev);
 
 			if (ev.type == Expose)
-			{
-				XClearWindow(dpy, win);
 				draw_bar(dpy, win, gc);
-			}
 		}
 
-		sleep(1);
+		draw_bar(dpy, win, gc);
+		usleep(1000000);
 	}
 
+
+	cleanup(dpy, win, gc);
 	return 0;
 }
+
+
+void 
+handle_sigint(int sig)
+{
+    (void)sig;
+    running = 0;
+}
+
