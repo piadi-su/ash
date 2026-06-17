@@ -24,9 +24,9 @@ init_font(Display *dpy, Window win, int screen)
 			);
 
 	XRenderColor xrcolor = {
-		.red   = 0xebdb * 257,
-		.green = 0xbda2 * 257,
-		.blue  = 0x82e3 * 257,
+		.red   = (unsigned short)(0xebdb * 257),
+		.green = (unsigned short)(0xbda2 * 257),
+		.blue  = (unsigned short)(0x82e3 * 257),
 		.alpha = 0xffff
 	};
 
@@ -48,16 +48,15 @@ init_font(Display *dpy, Window win, int screen)
 
 
 //make the window 
-void draw_bar(Display *dpy, Window win, GC gc, int screen)
+void 
+draw_bar(Display *dpy, Window win, GC gc)
 {
     char *buf = "ciao barra";
 
 	XSetWindowBackground(dpy, win, BACKGROUND_COLOR);
 
 	XSetForeground(dpy, gc, TEXT_COLOR);
-	XDrawString(dpy, win, gc, 10, 18, buf, strlen(buf));
 
-	init_font(dpy, win, screen);
 
     XClearWindow(dpy, win);
 
@@ -74,6 +73,28 @@ void draw_bar(Display *dpy, Window win, GC gc, int screen)
     XFlush(dpy);
 }
 
+
+void 
+cleanup(Display *dpy, Window win, GC gc)
+{
+    if (xft_draw)
+        XftDrawDestroy(xft_draw);
+
+    if (xft_font)
+        XftFontClose(dpy, xft_font);
+
+    XftColorFree(
+        dpy,
+        DefaultVisual(dpy, DefaultScreen(dpy)),
+        DefaultColormap(dpy, DefaultScreen(dpy)),
+        &xft_color
+    );
+
+	XFreeGC(dpy, gc);
+
+    XDestroyWindow(dpy, win);
+    XCloseDisplay(dpy);
+}
 
 
 // set all the dock posiotion propieties

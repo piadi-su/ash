@@ -147,6 +147,18 @@ CMakeFiles/bar.dir/src/main.c.o: /home/piadi/code_skool/x11_bar/src/main.c \
   /usr/include/bits/pthreadtypes.h \
   /usr/include/bits/select.h \
   /usr/include/bits/setjmp.h \
+  /usr/include/bits/sigaction.h \
+  /usr/include/bits/sigcontext.h \
+  /usr/include/bits/sigevent-consts.h \
+  /usr/include/bits/siginfo-arch.h \
+  /usr/include/bits/siginfo-consts.h \
+  /usr/include/bits/signal_ext.h \
+  /usr/include/bits/signum-arch.h \
+  /usr/include/bits/signum-generic.h \
+  /usr/include/bits/sigstack.h \
+  /usr/include/bits/sigstksz.h \
+  /usr/include/bits/sigthread.h \
+  /usr/include/bits/ss_flags.h \
   /usr/include/bits/stat.h \
   /usr/include/bits/stdint-intn.h \
   /usr/include/bits/stdio_lim.h \
@@ -165,14 +177,21 @@ CMakeFiles/bar.dir/src/main.c.o: /home/piadi/code_skool/x11_bar/src/main.c \
   /usr/include/bits/types/__locale_t.h \
   /usr/include/bits/types/__mbstate_t.h \
   /usr/include/bits/types/__sigset_t.h \
+  /usr/include/bits/types/__sigval_t.h \
   /usr/include/bits/types/clock_t.h \
   /usr/include/bits/types/clockid_t.h \
   /usr/include/bits/types/cookie_io_functions_t.h \
   /usr/include/bits/types/locale_t.h \
   /usr/include/bits/types/once_flag.h \
+  /usr/include/bits/types/sig_atomic_t.h \
+  /usr/include/bits/types/sigevent_t.h \
+  /usr/include/bits/types/siginfo_t.h \
   /usr/include/bits/types/sigset_t.h \
+  /usr/include/bits/types/sigval_t.h \
+  /usr/include/bits/types/stack_t.h \
   /usr/include/bits/types/struct_FILE.h \
   /usr/include/bits/types/struct___jmp_buf_tag.h \
+  /usr/include/bits/types/struct_sigstack.h \
   /usr/include/bits/types/struct_timespec.h \
   /usr/include/bits/types/struct_timeval.h \
   /usr/include/bits/types/time_t.h \
@@ -207,6 +226,7 @@ CMakeFiles/bar.dir/src/main.c.o: /home/piadi/code_skool/x11_bar/src/main.c \
   /usr/include/limits.h \
   /usr/include/linux/limits.h \
   /usr/include/setjmp.h \
+  /usr/include/signal.h \
   /usr/include/stdc-predef.h \
   /usr/include/stdio.h \
   /usr/include/stdlib.h \
@@ -216,6 +236,7 @@ CMakeFiles/bar.dir/src/main.c.o: /home/piadi/code_skool/x11_bar/src/main.c \
   /usr/include/sys/select.h \
   /usr/include/sys/stat.h \
   /usr/include/sys/types.h \
+  /usr/include/sys/ucontext.h \
   /usr/include/unistd.h \
   /usr/lib/gcc/x86_64-pc-linux-gnu/16.1.1/include/limits.h \
   /usr/lib/gcc/x86_64-pc-linux-gnu/16.1.1/include/stdarg.h \
@@ -267,8 +288,6 @@ bar: /usr/lib/Scrt1.o \
   CMakeFiles/bar.dir/src/main.c.o
 
 
-CMakeFiles/bar.dir/src/main.c.o:
-
 CMakeFiles/bar.dir/src/bar.c.o:
 
 /usr/lib32/libz.so.1:
@@ -276,8 +295,6 @@ CMakeFiles/bar.dir/src/bar.c.o:
 /usr/lib32/libpng16.so.16:
 
 /usr/lib32/libexpat.so.1:
-
-/usr/lib32/libbrotlidec.so.1:
 
 /usr/lib32/libbrotlicommon.so.1:
 
@@ -301,17 +318,31 @@ CMakeFiles/bar.dir/src/bar.c.o:
 
 /usr/lib/gcc/x86_64-pc-linux-gnu/16.1.1/crtendS.o:
 
-/usr/lib/gcc/x86_64-pc-linux-gnu/16.1.1/crtbeginS.o:
-
 /usr/lib/libm.so:
 
 /usr/lib/libbz2.so.1.0:
 
 /usr/lib/libgcc_s_asneeded.so:
 
-/usr/include/bits/types/struct_FILE.h:
+/usr/lib/libfreetype.so:
 
-/usr/include/sys/stat.h:
+/usr/lib/libc.so:
+
+/usr/lib/libatomic_asneeded.so:
+
+/usr/lib/libXrender.so:
+
+/usr/lib/libXft.so:
+
+/usr/lib/libX11.so:
+
+/usr/include/signal.h:
+
+/usr/include/bits/unistd_ext.h:
+
+/usr/include/bits/types/sigval_t.h:
+
+/usr/include/bits/types/siginfo_t.h:
 
 /usr/include/bits/types/clockid_t.h:
 
@@ -332,8 +363,6 @@ CMakeFiles/bar.dir/src/bar.c.o:
 /usr/include/limits.h:
 
 /usr/include/bits/thread-shared-types.h:
-
-/usr/lib/libfreetype.so:
 
 /usr/include/bits/struct_rwlock.h:
 
@@ -373,13 +402,13 @@ CMakeFiles/bar.dir/src/bar.c.o:
 
 /usr/include/bits/endian.h:
 
-/usr/include/bits/pthread_stack_min.h:
-
-/usr/lib/libX11.so:
+/usr/include/bits/types/__sigval_t.h:
 
 /usr/include/bits/stdint-intn.h:
 
-/usr/lib/libXft.so:
+/usr/lib/crtn.o:
+
+/usr/include/bits/sigstksz.h:
 
 /usr/include/bits/floatn.h:
 
@@ -401,11 +430,11 @@ CMakeFiles/bar.dir/src/bar.c.o:
 
 /usr/include/bits/types/clock_t.h:
 
-/usr/include/bits/posix2_lim.h:
-
 /usr/include/X11/Xosdefs.h:
 
 /usr/include/X11/Xft/Xft.h:
+
+/usr/include/bits/types/sigevent_t.h:
 
 /usr/include/X11/Xatom.h:
 
@@ -425,11 +454,17 @@ CMakeFiles/bar.dir/src/bar.c.o:
 
 /usr/include/bits/types.h:
 
-/usr/include/bits/getopt_core.h:
+/usr/include/bits/siginfo-arch.h:
 
 /home/piadi/code_skool/x11_bar/src/bar.c:
 
 /usr/include/X11/keysym.h:
+
+/usr/lib/libatomic.so:
+
+/usr/include/features.h:
+
+/usr/include/bits/endianness.h:
 
 /usr/lib32/libxcb.so.1:
 
@@ -437,9 +472,17 @@ CMakeFiles/bar.dir/src/bar.c.o:
 
 /usr/include/bits/libc-header-start.h:
 
+/usr/lib/gcc/x86_64-pc-linux-gnu/16.1.1/crtbeginS.o:
+
+/usr/include/bits/siginfo-consts.h:
+
 /usr/include/X11/Xft/XftCompat.h:
 
 /usr/include/alloca.h:
+
+/usr/include/bits/pthread_stack_min.h:
+
+/usr/include/bits/sigthread.h:
 
 /usr/include/bits/types/__sigset_t.h:
 
@@ -461,9 +504,13 @@ CMakeFiles/bar.dir/src/bar.c.o:
 
 /usr/include/freetype2/freetype/fterrdef.h:
 
-/usr/include/bits/posix1_lim.h:
+/usr/include/bits/types/struct_FILE.h:
 
-/usr/lib/libc.so:
+/usr/include/sys/stat.h:
+
+/usr/include/bits/ss_flags.h:
+
+/usr/include/bits/posix1_lim.h:
 
 /home/piadi/code_skool/x11_bar/src/bar.h:
 
@@ -472,6 +519,12 @@ CMakeFiles/bar.dir/src/bar.c.o:
 /usr/include/bits/pthread_stack_min-dynamic.h:
 
 /usr/include/bits/types/struct_timespec.h:
+
+/usr/include/bits/types/stack_t.h:
+
+/usr/include/bits/posix2_lim.h:
+
+/usr/include/bits/sigevent-consts.h:
 
 /usr/lib/Scrt1.o:
 
@@ -483,6 +536,8 @@ CMakeFiles/bar.dir/src/bar.c.o:
 
 /usr/lib/crti.o:
 
+/usr/include/bits/types/sig_atomic_t.h:
+
 /usr/include/bits/typesizes.h:
 
 /usr/lib/libXau.so.6:
@@ -490,6 +545,8 @@ CMakeFiles/bar.dir/src/bar.c.o:
 /usr/include/bits/uintn-identity.h:
 
 /usr/lib/libfontconfig.so:
+
+/usr/include/bits/types/struct_sigstack.h:
 
 /usr/include/freetype2/freetype/config/ftstdlib.h:
 
@@ -505,14 +562,6 @@ CMakeFiles/bar.dir/src/bar.c.o:
 
 /usr/include/features-time64.h:
 
-/usr/include/features.h:
-
-/usr/include/bits/endianness.h:
-
-/usr/lib/libatomic.so:
-
-/usr/include/freetype2/freetype/config/ftheader.h:
-
 /usr/include/freetype2/freetype/config/mac-support.h:
 
 /usr/include/freetype2/freetype/config/public-macros.h:
@@ -523,6 +572,12 @@ CMakeFiles/bar.dir/src/bar.c.o:
 
 /usr/include/freetype2/freetype/ftimage.h:
 
+/usr/lib/libxcb.so.1:
+
+/usr/lib/libgcc_s.so:
+
+/usr/include/freetype2/freetype/ftmoderr.h:
+
 /usr/include/bits/types/locale_t.h:
 
 /usr/include/freetype2/freetype/ftsystem.h:
@@ -531,9 +586,23 @@ CMakeFiles/bar.dir/src/bar.c.o:
 
 /usr/include/gnu/stubs-64.h:
 
+/usr/lib32/libbrotlidec.so.1:
+
+/usr/include/bits/signum-generic.h:
+
 /usr/include/bits/pthreadtypes-arch.h:
 
 /usr/include/gnu/stubs.h:
+
+/usr/include/bits/sigaction.h:
+
+/usr/include/bits/getopt_core.h:
+
+/usr/include/bits/sigstack.h:
+
+/usr/include/unistd.h:
+
+/usr/include/setjmp.h:
 
 /usr/include/stdlib.h:
 
@@ -553,9 +622,15 @@ CMakeFiles/bar.dir/src/bar.c.o:
 
 /usr/lib/gcc/x86_64-pc-linux-gnu/16.1.1/include/stdarg.h:
 
-/usr/lib/gcc/x86_64-pc-linux-gnu/16.1.1/include/syslimits.h:
+CMakeFiles/bar.dir/src/main.c.o:
+
+/usr/include/sys/ucontext.h:
+
+/usr/include/bits/signal_ext.h:
 
 /usr/lib/libgcc_s.so.1:
+
+/usr/lib/gcc/x86_64-pc-linux-gnu/16.1.1/include/syslimits.h:
 
 /usr/include/bits/confname.h:
 
@@ -563,20 +638,8 @@ CMakeFiles/bar.dir/src/bar.c.o:
 
 /usr/include/bits/posix_opt.h:
 
-/usr/include/bits/unistd_ext.h:
+/usr/include/freetype2/freetype/config/ftheader.h:
 
-/usr/include/setjmp.h:
+/usr/include/bits/sigcontext.h:
 
-/usr/include/unistd.h:
-
-/usr/lib/crtn.o:
-
-/usr/lib/libXrender.so:
-
-/usr/lib/libatomic_asneeded.so:
-
-/usr/lib/libxcb.so.1:
-
-/usr/include/freetype2/freetype/ftmoderr.h:
-
-/usr/lib/libgcc_s.so:
+/usr/include/bits/signum-arch.h:

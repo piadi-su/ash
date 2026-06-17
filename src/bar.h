@@ -5,9 +5,15 @@
 #include <X11/Xft/Xft.h>
 #include <fontconfig/fontconfig.h>
 
-void draw_bar(Display *dpy, Window win, GC gc, int screen);
-void set_dock_properties(Display *dpy, Window win, int width);
+void draw_bar(Display *dpy, Window win, GC gc);
+
 void init_font(Display *dpy, Window win, int screen);
+
+void cleanup(Display *dpy, Window win, GC gc);
+
+void set_dock_properties(Display *dpy, Window win, int width);
+
+
 
 extern XftDraw *xft_draw;
 extern XftFont *xft_font;

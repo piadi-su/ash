@@ -3,11 +3,18 @@
 #include <unistd.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <signal.h>
+
 
 //my files
 #include "bar.h"
 #include "config.h"
 
+
+
+volatile sig_atomic_t running = 1;
+
+void handle_sigint(int sig);
 
 
 int main(void)
@@ -31,6 +38,9 @@ int main(void)
 	
 	//create root window/desktop
 	Window root = RootWindow(dpy, screen);
+
+	//PER VALGRIND
+	signal(SIGINT, handle_sigint); 
 
 	// per non fare coprire da altre finestre
 	XSetWindowAttributes attrs = {0};
@@ -61,6 +71,9 @@ int main(void)
 	// say what kind of input the bar can recive
 	XSelectInput(dpy, win, ExposureMask | KeyPressMask);
 	
+	//inizialize the font 
+	init_font(dpy, win, screen);
+
 	//set in wait the window and make it visible 
 	XMapWindow(dpy, win);
 	
@@ -72,21 +85,32 @@ int main(void)
 			NULL
 			);
 
-
+	
 	//bar cycle
-	while (1)
+	while (running)
 	{
 		while (XPending(dpy))
 		{
 			XNextEvent(dpy, &ev);
 
 			if (ev.type == Expose)
-				draw_bar(dpy, win, gc, screen);
+				draw_bar(dpy, win, gc);
 		}
 
-		draw_bar(dpy, win, gc, screen);
+		draw_bar(dpy, win, gc);
 		usleep(1000000);
 	}
 
+
+	cleanup(dpy, win, gc);
 	return 0;
 }
+
+
+void 
+handle_sigint(int sig)
+{
+    (void)sig;
+    running = 0;
+}
+
