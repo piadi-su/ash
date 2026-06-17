@@ -1,0 +1,1 @@
+/usr/bin/cc -Wl,--dependency-file=CMakeFiles/pi-bar.dir/link.d "CMakeFiles/pi-bar.dir/src/main.c.o" "CMakeFiles/pi-bar.dir/src/xwin.c.o" -o pi-bar  -lX11

@@ -5,8 +5,8 @@
 #include <X11/Xatom.h>
 
 //my files
-#include "xwin.h"
-
+#include "bar.h"
+#include "config.h"
 
 
 
@@ -34,16 +34,19 @@ int main(void)
 
 	// per non fare coprire da altre finestre
 	XSetWindowAttributes attrs = {0};
+	
 
+	//get the width of the screen
 	int width = DisplayWidth(dpy, screen);
 
+	//create the window
 	Window win = XCreateWindow(
 			dpy,
 			root,
 			0,
 			0,
 			width,
-			24,
+			BAR_HEIGHT,
 			0,
 			CopyFromParent,
 			InputOutput,
@@ -52,13 +55,16 @@ int main(void)
 			&attrs
 			);
 	
+	//make it not in tyle mode reserv the pixel size 
 	set_dock_properties(dpy, win, width);
-
+	
+	// say what kind of input the bar can recive
 	XSelectInput(dpy, win, ExposureMask | KeyPressMask);
-
+	
+	//set in wait the window and make it visible 
 	XMapWindow(dpy, win);
 	
-	
+	//create the thing to draw stuff on bar
 	GC gc = XCreateGC(
 			dpy,
 			win,
@@ -67,7 +73,7 @@ int main(void)
 			);
 
 
-
+	//bar cycle
 	while (1)
 	{
 		while (XPending(dpy))
@@ -75,13 +81,11 @@ int main(void)
 			XNextEvent(dpy, &ev);
 
 			if (ev.type == Expose)
-			{
-				XClearWindow(dpy, win);
-				draw_bar(dpy, win, gc);
-			}
+				draw_bar(dpy, win, gc, screen);
 		}
 
-		sleep(1);
+		draw_bar(dpy, win, gc, screen);
+		usleep(1000000);
 	}
 
 	return 0;

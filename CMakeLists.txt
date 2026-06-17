@@ -1,18 +1,30 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(pi-bar C)
+project(bar C)
 
-add_executable(pi-bar 
+add_executable(bar 
 	src/main.c
+	src/bar.c
 )
 
-target_compile_options(pi-bar PRIVATE
+target_include_directories(bar PRIVATE
+    /usr/include/freetype2
+    /usr/include/fontconfig
+    /usr/include
+)
+
+target_compile_options(bar PRIVATE
     -Wall
     -Wextra
     -Wpedantic
 )
 
-target_link_libraries(pi-bar PRIVATE
-	X11
+target_link_libraries(bar PRIVATE
+    X11
+    Xft
+    fontconfig
+    freetype
+    m
+    Xrender
 )
 
