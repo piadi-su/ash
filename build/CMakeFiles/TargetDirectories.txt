@@ -1,3 +1,0 @@
-/home/piadi/code_skool/x11_bar/build/CMakeFiles/bar.dir
-/home/piadi/code_skool/x11_bar/build/CMakeFiles/edit_cache.dir
-/home/piadi/code_skool/x11_bar/build/CMakeFiles/rebuild_cache.dir
