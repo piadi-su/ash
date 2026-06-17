@@ -4,6 +4,8 @@
 #include <X11/Xft/Xft.h>
 #include <fontconfig/fontconfig.h>
 #include <string.h>
+#include <time.h>
+#include <stdio.h>
 
 #include "bar.h"
 #include "config.h"
@@ -14,6 +16,8 @@ XftFont *xft_font = NULL;
 XftDraw *xft_draw = NULL;
 XftColor xft_color;
 
+
+//reder the font 
 void 
 init_font(Display *dpy, Window win, int screen)
 {
@@ -46,34 +50,7 @@ init_font(Display *dpy, Window win, int screen)
 			);
 }
 
-
-//make the window 
-void 
-draw_bar(Display *dpy, Window win, GC gc)
-{
-    char *buf = "ciao barra";
-
-	XSetWindowBackground(dpy, win, BACKGROUND_COLOR);
-
-	XSetForeground(dpy, gc, TEXT_COLOR);
-
-
-    XClearWindow(dpy, win);
-
-    XftDrawStringUtf8(
-        xft_draw,
-        &xft_color,
-        xft_font,
-        10,
-        18,
-        (FcChar8 *)buf,
-        strlen(buf)
-    );
-
-    XFlush(dpy);
-}
-
-
+//free everything
 void 
 cleanup(Display *dpy, Window win, GC gc)
 {
@@ -133,3 +110,72 @@ set_dock_properties(Display *dpy, Window win, int width)
         12
     );
 }
+
+
+
+//make the bar  
+void 
+draw_bar(Display *dpy, Window win, GC gc, BarState *s)
+{
+    char buf[512];
+
+	XSetWindowBackground(dpy, win, BACKGROUND_COLOR);
+
+	XSetForeground(dpy, gc, TEXT_COLOR);
+
+
+    XClearWindow(dpy, win);
+	
+
+	snprintf(buf, sizeof(buf),
+			"WS:%s | VOL:%s | IP:%s | RAM:%s | %s",
+			s->workspace,
+			s->volume,
+			s->ipv4,
+			s->ram,
+			s->datetime
+			);
+
+    XftDrawStringUtf8(
+        xft_draw,
+        &xft_color,
+        xft_font,
+        10,
+        18,
+        (FcChar8 *)buf,
+        strlen(buf)
+    );
+
+    XFlush(dpy);
+}
+
+/*============ bar modules =============*/
+
+
+
+void 
+update_datetime(BarState *s)
+{
+    time_t t = time(NULL);
+    struct tm *tm_info = localtime(&t);
+
+    strftime(s->datetime, sizeof(s->datetime),
+             "%Y-%m-%d %H:%M", tm_info);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

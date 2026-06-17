@@ -23,6 +23,9 @@ int main(void)
 	//var that stores all xevents
 	XEvent ev;
 	
+	//initialize the bar state struct
+	BarState s = {0};
+
 	//connect to x11 
 	Display *dpy = XOpenDisplay(NULL);
 	
@@ -94,10 +97,10 @@ int main(void)
 			XNextEvent(dpy, &ev);
 
 			if (ev.type == Expose)
-				draw_bar(dpy, win, gc);
+				draw_bar(dpy, win,gc , &s);
 		}
 
-		draw_bar(dpy, win, gc);
+		draw_bar(dpy, win, gc, &s);
 		usleep(1000000);
 	}
 
