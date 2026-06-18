@@ -286,14 +286,16 @@ i3_subscribe(int sock)
     const char *subscribe_json = "[\"workspace\"]";
     send_i3_message(sock, I3_IPC_MESSAGE_TYPE_SUBSCRIBE, subscribe_json);
     
-    // Legge e scarta la risposta di conferma dell'iscrizione per pulire il buffer
     char magic[6];
-    uint32_t r_len, r_type;
+    uint32_t r_len = 0, r_type = 0;
+    
+    // if Ctrl+C was hit don't touch memory
     if (read_full(sock, magic, 6) < 0) return;
     if (read_full(sock, &r_len, 4) < 0) return;
     if (read_full(sock, &r_type, 4) < 0) return;
     
-    if (r_len > 0) {
+	// Json protection
+    if (r_len > 0 && r_len < 65535) {
         char *t = malloc(r_len);
         if (t) {
             read_full(sock, t, r_len);
@@ -336,7 +338,7 @@ update_workspaces(int query_sock, BarState *s)
         if (nlen >= sizeof(name)) nlen = sizeof(name) - 1;
         memcpy(name, p, nlen);
 
-        // Controllo accurato del focus limitando la ricerca all'oggetto JSON corrente
+        // json check
         char *focused_ptr = strstr(end, "\"focused\":");
         int focused = 0;
         if (focused_ptr && (focused_ptr - end < 150)) {
@@ -357,7 +359,7 @@ update_workspaces(int query_sock, BarState *s)
 
     free(json);
 
-    // Rimuove l'ultimo spazio vuoto
+	//free all space left
     size_t len_ws = strlen(s->workspace);
     if (len_ws > 0 && s->workspace[len_ws - 1] == ' ')
         s->workspace[len_ws - 1] = '\0';

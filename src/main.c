@@ -22,10 +22,9 @@ void handle_sigint(int sig);
 
 int main(void)
 {
-	
 	//var that stores all xevents
 	XEvent ev;
-	
+
 	// i3 event inizializer
 	int i3_event_sock;
 	int i3_query_sock;
@@ -33,19 +32,27 @@ int main(void)
 	//initialize the bar state struct
 	BarState s = {0};
 
-	//connect to x11 
-	// inizializer socket i3 IPC
+	// Configura subito il gestore dei segnali prima di qualsiasi altra operazione
+	signal(SIGINT, handle_sigint); 
+
+	// Inizializzazione socket i3 IPC
 	i3_event_sock = connect_i3_ipc();
 	i3_query_sock = connect_i3_ipc();
 	if (i3_event_sock < 0 || i3_query_sock < 0) {
 		fprintf(stderr, "can't connect to the i3 ipc\n");
 		return 1;
 	}
+
+	// Iscrizione ai workspace. Se l'utente preme Ctrl+C qui, usciamo subito
 	i3_subscribe(i3_event_sock);
+	if (!running) {
+		close(i3_event_sock);
+		close(i3_query_sock);
+		return 0;
+	}
 
 	//connect to x11 
 	Display *dpy = XOpenDisplay(NULL);
-
 	if(dpy == NULL)
 	{
 		fprintf(stderr, "can not open the disply!\n");
@@ -53,83 +60,61 @@ int main(void)
 		close(i3_query_sock);
 		return 1;
 	}
-	
 
 	// get the display like DP-2 ecc
 	int screen = DefaultScreen(dpy);
-	
+
 	//create root window/desktop
 	Window root = RootWindow(dpy, screen);
 
-	//for natural stopping of the bar
-	signal(SIGINT, handle_sigint); 
-
-	// for dock proprietes
+	// for dock pos
 	XSetWindowAttributes attrs = {0};
-	
 
 	//get the width of the screen
 	int width = DisplayWidth(dpy, screen);
 
 	//create the window
 	Window win = XCreateWindow(
-			dpy,
-			root,
-			0,
-			0,
-			width,
-			BAR_HEIGHT,
-			0,
-			CopyFromParent,
-			InputOutput,
-			CopyFromParent,
-			CWOverrideRedirect,
-			&attrs
+			dpy, root, 0, 0, width, BAR_HEIGHT, 0,
+			CopyFromParent, InputOutput, CopyFromParent,
+			CWOverrideRedirect, &attrs
 			);
-	
+
 	//make it not in tyle mode reserv the pixel size 
 	set_dock_properties(dpy, win, width);
-	
+
 	// say what kind of input the bar can recive
 	XSelectInput(dpy, win, ExposureMask | KeyPressMask);
-	
+
 	//inizialize the font 
 	init_font(dpy, win, screen);
 
 	//set in wait the window and make it visible 
 	XMapWindow(dpy, win);
-	
+
 	//create the thing to draw stuff on bar
-	GC gc = XCreateGC(
-			dpy,
-			win,
-			0,
-			NULL
-			);
+	GC gc = XCreateGC(dpy, win, 0, NULL);
 
-	
+	// Caricamento dati iniziale prima di entrare nel ciclo
+	update_workspaces(i3_query_sock, &s);
+	update_datetime(&s);
+	update_volume(&s);
+	update_ram(&s);
+	update_ipv4(&s);
 
-	//preloding everithing
-    update_workspaces(i3_query_sock, &s);
-    update_datetime(&s);
-    update_volume(&s);
-    update_ram(&s);
-    update_ipv4(&s);
+	// selector config
+	int x11_fd = ConnectionNumber(dpy);
+	int max_fd = (x11_fd > i3_event_sock) ? x11_fd : i3_event_sock;
+	fd_set in_fds;
+	struct timeval tv;
 
-    // Configurazione descrittori per la select()
-    int x11_fd = ConnectionNumber(dpy);
-    int max_fd = (x11_fd > i3_event_sock) ? x11_fd : i3_event_sock;
-    fd_set in_fds;
-    struct timeval tv;
 	//bar cycle
-
 	while (running)
 	{
 		FD_ZERO(&in_fds);
 		FD_SET(x11_fd, &in_fds);
 		FD_SET(i3_event_sock, &in_fds);
 
-		// set time out to 1 sec
 		tv.tv_sec = 1;
 		tv.tv_usec = 0;
 
@@ -138,7 +123,7 @@ int main(void)
 
 		if (activity < 0) continue;
 
-		// X11 event handling
+		// X11 event handler
 		while (XPending(dpy))
 		{
 			XNextEvent(dpy, &ev);
@@ -146,7 +131,7 @@ int main(void)
 				redraw = 1;
 		}
 
-		// i3 workspace handler
+		// i3 event handler
 		if (FD_ISSET(i3_event_sock, &in_fds)) {
 			char magic[6];
 			uint32_t r_len, r_type;
@@ -165,7 +150,7 @@ int main(void)
 			}
 		}
 
-		//timer for other modules
+		// timer handler
 		if (activity == 0) {
 			update_datetime(&s);
 			update_volume(&s);
@@ -174,16 +159,14 @@ int main(void)
 			redraw = 1;
 		}
 
-		// redraw the bar only when necessary
 		if (redraw) {
 			draw_bar(dpy, win, gc, &s);
 		}
 	}
 
-
 	cleanup(dpy, win, gc);
-    close(i3_event_sock);
-	cleanup(dpy, win, gc);
+	close(i3_event_sock);
+	close(i3_query_sock);
 	return 0;
 }
 
