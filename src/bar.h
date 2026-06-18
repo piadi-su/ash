@@ -54,3 +54,4 @@ extern XftColor xft_color;
 
 
 #endif
+

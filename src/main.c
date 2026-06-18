@@ -22,44 +22,34 @@ void handle_sigint(int sig);
 
 int main(void)
 {
-	//var that stores all xevents
 	XEvent ev;
+    int i3_event_sock;
+    int i3_query_sock;
+    BarState s = {0};
 
-	// i3 event inizializer
-	int i3_event_sock;
-	int i3_query_sock;
+    // configure signal handler 
+    signal(SIGINT, handle_sigint); 
 
-	//initialize the bar state struct
-	BarState s = {0};
+    // inizialize socket i3 IPC
+    i3_event_sock = connect_i3_ipc();
+    i3_query_sock = connect_i3_ipc();
+    if (i3_event_sock < 0 || i3_query_sock < 0) {
+        fprintf(stderr, "Impossibile connettersi a i3 IPC!\n");
+        return 1;
+    }
+    
+	//for valgrind 
+    i3_subscribe(i3_event_sock);
 
-	// Configura subito il gestore dei segnali prima di qualsiasi altra operazione
-	signal(SIGINT, handle_sigint); 
-
-	// Inizializzazione socket i3 IPC
-	i3_event_sock = connect_i3_ipc();
-	i3_query_sock = connect_i3_ipc();
-	if (i3_event_sock < 0 || i3_query_sock < 0) {
-		fprintf(stderr, "can't connect to the i3 ipc\n");
-		return 1;
-	}
-
-	// Iscrizione ai workspace. Se l'utente preme Ctrl+C qui, usciamo subito
-	i3_subscribe(i3_event_sock);
-	if (!running) {
-		close(i3_event_sock);
-		close(i3_query_sock);
-		return 0;
-	}
-
-	//connect to x11 
-	Display *dpy = XOpenDisplay(NULL);
-	if(dpy == NULL)
-	{
-		fprintf(stderr, "can not open the disply!\n");
-		close(i3_event_sock);
-		close(i3_query_sock);
-		return 1;
-	}
+	// dpy connection
+    Display *dpy = XOpenDisplay(NULL);
+    if(dpy == NULL)
+    {
+        fprintf(stderr, "can not open the disply!\n");
+        close(i3_event_sock);
+        close(i3_query_sock);
+        return 1;
+    }
 
 	// get the display like DP-2 ecc
 	int screen = DefaultScreen(dpy);
@@ -131,39 +121,47 @@ int main(void)
 				redraw = 1;
 		}
 
-		// i3 event handler
+		// i3 event handler 
 		if (FD_ISSET(i3_event_sock, &in_fds)) {
 			char magic[6];
-			uint32_t r_len, r_type;
-			if (read_full(i3_event_sock, magic, 6) >= 0) {
-				read_full(i3_event_sock, &r_len, 4);
-				read_full(i3_event_sock, &r_type, 4);
-				if (r_len > 0) {
-					char *ev_j = malloc(r_len);
-					if (ev_j) {
-						read_full(i3_event_sock, ev_j, r_len);
-						free(ev_j);
+			uint32_t r_len = 0, r_type = 0;
+
+			// Leggiamo l'header in modo atomico
+			if (read_full(i3_event_sock, magic, 6) == 0) {
+				if (read_full(i3_event_sock, &r_len, 4) == 0 &&
+						read_full(i3_event_sock, &r_type, 4) == 0) {
+
+					// Svuotiamo SEMPRE il payload associato a questo messaggio,
+					// altrimenti il socket si disallinea e smette di funzionare!
+					if (r_len > 0) {
+						char *ev_j = malloc(r_len);
+						if (ev_j) {
+							read_full(i3_event_sock, ev_j, r_len);
+							free(ev_j);
+						}
 					}
+
+					// Eseguiamo l'interrogazione dei workspace sul socket di query
+					update_workspaces(i3_query_sock, &s);
+					redraw = 1;
 				}
-				update_workspaces(i3_query_sock, &s);
-				redraw = 1;
 			}
 		}
 
-		// timer handler
-		if (activity == 0) {
+		// timer handler / background refresh
+		if (activity == 0 || redraw) {
 			update_datetime(&s);
 			update_volume(&s);
 			update_ram(&s);
 			update_ipv4(&s);
-			redraw = 1;
+			redraw = 1; 
 		}
 
 		if (redraw) {
 			draw_bar(dpy, win, gc, &s);
 		}
 	}
-
+	
 	cleanup(dpy, win, gc);
 	close(i3_event_sock);
 	close(i3_query_sock);
@@ -177,4 +175,5 @@ handle_sigint(int sig)
     (void)sig;
     running = 0;
 }
+
 

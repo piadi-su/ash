@@ -284,24 +284,9 @@ void
 i3_subscribe(int sock) 
 {
     const char *subscribe_json = "[\"workspace\"]";
+    // Inviamo solo il messaggio. La conferma e gli eventi arriveranno 
+    // fluidamente tutti nello stesso posto: la select() nel main.
     send_i3_message(sock, I3_IPC_MESSAGE_TYPE_SUBSCRIBE, subscribe_json);
-    
-    char magic[6];
-    uint32_t r_len = 0, r_type = 0;
-    
-    // if Ctrl+C was hit don't touch memory
-    if (read_full(sock, magic, 6) < 0) return;
-    if (read_full(sock, &r_len, 4) < 0) return;
-    if (read_full(sock, &r_type, 4) < 0) return;
-    
-	// Json protection
-    if (r_len > 0 && r_len < 65535) {
-        char *t = malloc(r_len);
-        if (t) {
-            read_full(sock, t, r_len);
-            free(t);
-        }
-    }
 }
 
 void 
@@ -364,3 +349,4 @@ update_workspaces(int query_sock, BarState *s)
     if (len_ws > 0 && s->workspace[len_ws - 1] == ' ')
         s->workspace[len_ws - 1] = '\0';
 }
+
