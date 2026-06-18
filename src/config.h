@@ -5,8 +5,8 @@
 
 #define BACKGROUND_COLOR 0x1d2021
 
-// #define TEXT_COLOR 0xebdbb2
-#define TEXT_COLOR 0xff0000
+// #define TEXT_COLOR 0xebdbb2 always put 0x and than the rgb code
+#define TEXT_COLOR 0x8f00ff
 
 
 // Nome del font moderno (Fontconfig format)

@@ -4,6 +4,11 @@
 #include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>
 #include <fontconfig/fontconfig.h>
+#include <stdint.h>
+
+#define I3_IPC_MAGIC "i3-ipc"
+#define I3_IPC_MESSAGE_TYPE_GET_WORKSPACES 1
+#define I3_IPC_MESSAGE_TYPE_SUBSCRIBE 2
 
 //struct that keeps the bar state
 typedef struct {
@@ -32,6 +37,12 @@ void update_ipv4(BarState *s);
 void update_ram(BarState *s);
 void update_datetime(BarState *s);
 
+int connect_i3_ipc(void);
+void send_i3_message(int sock, uint32_t type, const char *payload);
+void i3_subscribe(int sock);
+void update_workspaces(int query_sock, BarState *s);
+int read_full(int fd, void *buf, size_t n);
+ 
 
 //font rendering
 extern XftDraw *xft_draw;
