@@ -13,7 +13,7 @@
 #define BAR_SPACER "|"
 
 // if bottom = 0 the bar is going to be on the top
-#define BOTTOM 0
+#define BOTTOM 1
 
 // Nome del font moderno (Fontconfig format)
 #define BAR_FONT "Iosevka Nerd Font:size=13:antialias=true"

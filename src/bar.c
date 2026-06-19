@@ -106,12 +106,12 @@ set_dock_properties(Display *dpy, Window win, int width)
     );
 
     unsigned long strut[12] = {0};
-	
+
 	if(BOTTOM)
 	{
-		strut[2] = BAR_HEIGHT;        // top
-		strut[8] = 0;         // start x
-		strut[9] = width;     // end x
+		strut[3] = BAR_HEIGHT;        // top
+		strut[10] = 0;         // start x
+		strut[11] = width;     // end x
 	}
 
 	else{
@@ -133,6 +133,7 @@ set_dock_properties(Display *dpy, Window win, int width)
         12
     );
 }
+
 
 
 
