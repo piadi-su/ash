@@ -63,12 +63,16 @@ int main(void)
 	//get the width of the screen
 	int width = DisplayWidth(dpy, screen);
 
-	//create the window
-	Window win = XCreateWindow(
-			dpy, root, 0, 0, width, BAR_HEIGHT, 0,
-			CopyFromParent, InputOutput, CopyFromParent,
-			CWOverrideRedirect, &attrs
-			);
+	//get bottom position
+	int screen_height = DisplayHeight(dpy, screen);
+    int y_pos = (BOTTOM) ? (screen_height - BAR_HEIGHT) : 0;
+
+    //create the window
+    Window win = XCreateWindow(
+            dpy, root, 0, y_pos, width, BAR_HEIGHT, 0,
+            CopyFromParent, InputOutput, CopyFromParent,
+            CWOverrideRedirect, &attrs
+            );
 
 	//make it not in tyle mode reserv the pixel size 
 	set_dock_properties(dpy, win, width);

@@ -13,6 +13,9 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <netdb.h>
+
+
 
 #include "bar.h"
 #include "config.h"
@@ -103,10 +106,19 @@ set_dock_properties(Display *dpy, Window win, int width)
     );
 
     unsigned long strut[12] = {0};
+	
+	if(BOTTOM)
+	{
+		strut[2] = BAR_HEIGHT;        // top
+		strut[8] = 0;         // start x
+		strut[9] = width;     // end x
+	}
 
-    strut[2] = BAR_HEIGHT;        // top
-    strut[8] = 0;         // start x
-    strut[9] = width;     // end x
+	else{
+		strut[2] = BAR_HEIGHT;        // top
+		strut[8] = 0;         // start x
+		strut[9] = width;     // end x
+	}
 
     Atom strut_atom =
         XInternAtom(dpy, "_NET_WM_STRUT_PARTIAL", False);
@@ -139,11 +151,15 @@ draw_bar(Display *dpy, Window win, GC gc, BarState *s)
 	
 
 	snprintf(buf, sizeof(buf),
-			"WS:%s | VOL:%s | IP:%s | RAM:%s | %s",
+			"%s %s Vol:%s %s %s %s RAM %s %s %s ",
 			s->workspace,
+			BAR_SPACER,
 			s->volume,
+			BAR_SPACER,
 			s->ipv4,
+			BAR_SPACER,
 			s->ram,
+			BAR_SPACER,
 			s->datetime
 			);
 
@@ -171,15 +187,23 @@ update_datetime(BarState *s)
     struct tm *tm_info = localtime(&t);
 
     strftime(s->datetime, sizeof(s->datetime),
-             "%Y-%m-%d %H:%M", tm_info);
+             "%a/%d  %H:%M", tm_info);
 }
 
 void 
 update_volume(BarState *s)
 {
     FILE *f = popen("pactl get-sink-volume @DEFAULT_SINK@", "r");
+    if (!f) return;
 
-    fgets(s->volume, sizeof(s->volume), f);
+    char line[256];
+    if (fgets(line, sizeof(line), f)) {
+
+        int vol = 0;
+        sscanf(line, "Volume: %*[^/]/ %d%%", &vol);
+
+        snprintf(s->volume, sizeof(s->volume), "%d%%", vol);
+    }
 
     pclose(f);
 }
@@ -189,46 +213,48 @@ update_ram(BarState *s)
 {
     FILE *f = fopen("/proc/meminfo", "r");
 
-    long total = 0, free_ram = 0;
+    float total = 0, free_ram = 0;
     char line[128];
 
     while (fgets(line, sizeof(line), f))
     {
-        if (sscanf(line, "MemTotal: %ld kB", &total) == 1) continue;
-        if (sscanf(line, "MemAvailable: %ld kB", &free_ram) == 1) continue;
+        if (sscanf(line, "MemTotal: %f kB", &total) == 1) continue;
+        if (sscanf(line, "MemAvailable: %f kB", &free_ram) == 1) continue;
     }
 
     fclose(f);
 
-    long used = total - free_ram;
+    float used = total - free_ram;
 
     snprintf(s->ram, sizeof(s->ram),
-             "RAM %ldMB", used / 1024);
+             "%.1fGi/%.1fGi", used / 1024 /1000, total / 1024 /1000);
 }
 
 
 void 
-update_ipv4(BarState *s)
-{
+update_ipv4(BarState *s) {
     struct ifaddrs *ifaddr, *ifa;
-
-    getifaddrs(&ifaddr);
-
-    for (ifa = ifaddr; ifa; ifa = ifa->ifa_next)
-    {
-        if (!ifa->ifa_addr) continue;
-
-        if (ifa->ifa_addr->sa_family == AF_INET)
-        {
-            void *addr = &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr;
-
-            inet_ntop(AF_INET, addr, s->ipv4, sizeof(s->ipv4));
-            break;
-        }
+    char host[NI_MAXHOST];
+	
+    if (getifaddrs(&ifaddr) == -1) {
+        perror("getifaddrs");
+        return;
     }
 
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+        if (!ifa->ifa_addr) continue;
+        if (ifa->ifa_addr->sa_family == AF_INET) {
+            void *addr = &((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
+            inet_ntop(AF_INET, addr, host, NI_MAXHOST);
+            if (strcmp(host, "127.0.0.1") != 0) { // ignora localhost
+				strcpy(s->ipv4, host);
+                break;
+            }
+        }
+    }
     freeifaddrs(ifaddr);
 }
+
 
 
 //worksapces
@@ -284,8 +310,6 @@ void
 i3_subscribe(int sock) 
 {
     const char *subscribe_json = "[\"workspace\"]";
-    // Inviamo solo il messaggio. La conferma e gli eventi arriveranno 
-    // fluidamente tutti nello stesso posto: la select() nel main.
     send_i3_message(sock, I3_IPC_MESSAGE_TYPE_SUBSCRIBE, subscribe_json);
 }
 
@@ -310,20 +334,27 @@ update_workspaces(int query_sock, BarState *s)
     }
     json[len] = '\0';
 
-    s->workspace[0] = '\0';
-    char *p = json;
+	//strct for saving json
+    struct ws_info {
+        int num;
+        char name[64];
+        int focused;
+    } ws_list[32];
+    int ws_count = 0;
 
-    while ((p = strstr(p, "\"name\":\"")) != NULL) {
+    char *p = json;
+    while ((p = strstr(p, "\"name\":\"")) != NULL && ws_count < 32) {
         p += 8;
         char *end = strchr(p, '"');
         if (!end) break;
 
+        // extract workspace name
         char name[64] = {0};
         size_t nlen = end - p;
         if (nlen >= sizeof(name)) nlen = sizeof(name) - 1;
         memcpy(name, p, nlen);
 
-        // json check
+		//fucussed extract
         char *focused_ptr = strstr(end, "\"focused\":");
         int focused = 0;
         if (focused_ptr && (focused_ptr - end < 150)) {
@@ -332,19 +363,43 @@ update_workspaces(int query_sock, BarState *s)
             }
         }
 
-        char tmp[128];
-        if (focused)
-            snprintf(tmp, sizeof(tmp), "[%s] ", name);
-        else
-            snprintf(tmp, sizeof(tmp), "%s ", name);
+		//get the real workspace number
+        int num = atoi(name); 
 
-        strncat(s->workspace, tmp, sizeof(s->workspace) - strlen(s->workspace) - 1);
+        // Salva nella lista temporanea
+        ws_list[ws_count].num = num;
+        ws_list[ws_count].focused = focused;
+        strcpy(ws_list[ws_count].name, name);
+        ws_count++;
+
         p = end;
     }
-
     free(json);
 
-	//free all space left
+    // bubble sort
+    for (int i = 0; i < ws_count - 1; i++) {
+        for (int j = 0; j < ws_count - i - 1; j++) {
+            if (ws_list[j].num > ws_list[j + 1].num) {
+                struct ws_info temp = ws_list[j];
+                ws_list[j] = ws_list[j + 1];
+                ws_list[j + 1] = temp;
+            }
+        }
+    }
+
+    // making the string
+    s->workspace[0] = '\0';
+    for (int i = 0; i < ws_count; i++) {
+        char tmp[128];
+        if (ws_list[i].focused)
+            snprintf(tmp, sizeof(tmp), "[%s] ", ws_list[i].name);
+        else
+            snprintf(tmp, sizeof(tmp), "%s ", ws_list[i].name);
+
+        strncat(s->workspace, tmp, sizeof(s->workspace) - strlen(s->workspace) - 1);
+    }
+
+    // removing left spaces
     size_t len_ws = strlen(s->workspace);
     if (len_ws > 0 && s->workspace[len_ws - 1] == ' ')
         s->workspace[len_ws - 1] = '\0';
