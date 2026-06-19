@@ -139,7 +139,8 @@ set_dock_properties(Display *dpy, Window win, int width)
 
 
 //make the bar  
-void draw_bar(Display *dpy, Window win, GC gc, BarState *s)
+void 
+draw_bar(Display *dpy, Window win, GC gc, BarState *s)
 {
     BarLayout l;
     build_layout(s, &l);
@@ -148,13 +149,17 @@ void draw_bar(Display *dpy, Window win, GC gc, BarState *s)
     XSetForeground(dpy, gc, TEXT_COLOR);
     XClearWindow(dpy, win);
 
-    int text_y = 18;
-    int padding = 10;
-
-	//get the window width
     XWindowAttributes wa;
     XGetWindowAttributes(dpy, win, &wa);
+
     int bar_width = wa.width;
+    int bar_height = wa.height;
+
+    int ascent = xft_font->ascent;
+    int descent = xft_font->descent;
+
+    int text_y = (bar_height - (ascent + descent)) / 2 + ascent;
+    int padding = 10;
 
     // ================= LEFT =================
     XftDrawStringUtf8(
@@ -178,6 +183,7 @@ void draw_bar(Display *dpy, Window win, GC gc, BarState *s)
     );
 
     int right_x = bar_width - ext.xOff - padding;
+	// int right_x = bar_width - ext.width - padding;
 
     XftDrawStringUtf8(
         xft_draw,
@@ -192,7 +198,9 @@ void draw_bar(Display *dpy, Window win, GC gc, BarState *s)
     XFlush(dpy);
 }
 
-void build_layout(BarState *s, BarLayout *l)
+
+void 
+build_layout(BarState *s, BarLayout *l)
 {
     // LEFT
     snprintf(l->left, sizeof(l->left),

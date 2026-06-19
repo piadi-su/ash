@@ -41,6 +41,6 @@
 
 
 // font that the bar in going to try to use
-#define BAR_FONT "Iosevka Nerd Font:size=11:antialias=true"
+#define BAR_FONT "Iosevka Nerd Font:size=12:antialias=true"
 // #define BAR_FONT "JetBrains Mono Nerd Font:size=13:antialias=true"
 
