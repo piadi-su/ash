@@ -19,6 +19,13 @@ typedef struct {
     char datetime[128];
 } BarState;
 
+//strct for the bar modules layout
+// typedef struct {
+//     char left[256];
+//     char center[256];
+//     char right[512];
+// } BarLayout;
+
 
 //bar setup
 
@@ -29,6 +36,7 @@ void cleanup(Display *dpy, Window win, GC gc);
 void set_dock_properties(Display *dpy, Window win, int width);
 
 void draw_bar(Display *dpy, Window win, GC gc, BarState *s);
+
 
 //bar modules
 void update_workspace(BarState *s);

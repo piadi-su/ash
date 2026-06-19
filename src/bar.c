@@ -2,6 +2,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xft/Xft.h>
+#include <X11/extensions/Xrender.h>
 #include <fontconfig/fontconfig.h>
 #include <string.h>
 #include <time.h>
@@ -138,44 +139,159 @@ set_dock_properties(Display *dpy, Window win, int width)
 
 
 //make the bar  
+// void 
+// draw_bar(Display *dpy, Window win, GC gc, BarState *s)
+// {
+//
+// 	XSetWindowBackground(dpy, win, BACKGROUND_COLOR);
+//
+// 	XSetForeground(dpy, gc, TEXT_COLOR);
+//
+//     XClearWindow(dpy, win);
+//
+// 	//centred text font alignement 
+// 	int text_y = 18;
+//
+//
+// 	//ofsets
+// 	const int left_pixel_margin = 10;
+//
+// 	// const int centre_pixel_margin= 0;
+//
+// 	const int right_pixel_margin = 0;
+//
+//
+//
+// 	XGlyphInfo extents;
+//
+// 	// ==== left buffer ====
+// 	char left_buffer[256];
+//
+// 	snprintf(
+// 			left_buffer,sizeof(left_buffer),
+// 			"%s",
+// 			s->workspace
+// 			);
+//
+//
+//     XftDrawStringUtf8(
+//         xft_draw,
+//         &xft_color,
+//         xft_font,
+//         left_pixel_margin,
+//         text_y,
+//         (FcChar8 *)left_buffer,
+//         strlen(left_buffer)
+//     );
+//
+// 	// ==== centre buffer ====
+//
+// 	// char center_buffer[256];
+// 	//
+// 	// snprintf(
+// 	// 		center_buffer,sizeof(center_buffer),
+// 	// 		"",
+// 	//
+// 	// 		);
+// 	// XftDrawStringUtf8(
+// 	// 		xft_draw,
+// 	// 		&xft_color,
+// 	// 		xft_font,
+// 	// 		centre_pixel_margin,
+// 	// 		text_y,
+// 	// 		(FcChar8 *)center_buffer,
+// 	// 		strlen(center_buffer)
+// 	// 		);
+//
+// 	// ==== right buffer ====
+//
+// 	char right_buffer[512];
+//
+// 	snprintf(
+// 			right_buffer, sizeof(right_buffer),
+// 			"Vol: %s %s IP: %s %s %s %s %s",
+// 			s->volume,
+// 			BAR_SPACER,
+// 			s->ipv4,
+// 			BAR_SPACER,
+// 			s->ram,
+// 			BAR_SPACER,
+// 			s->datetime
+// 			);
+//
+// 	XftDrawStringUtf8(
+// 			xft_draw,
+// 			&xft_color,
+// 			xft_font,
+// 			right_pixel_margin,
+// 			text_y,
+// 			(FcChar8 *)right_buffer,
+// 			strlen(right_buffer)
+// 			);
+//
+//
+//     XFlush(dpy);
+// }
+
+
+
 void 
 draw_bar(Display *dpy, Window win, GC gc, BarState *s)
 {
-    char buf[512];
-
-	XSetWindowBackground(dpy, win, BACKGROUND_COLOR);
-
-	XSetForeground(dpy, gc, TEXT_COLOR);
-
-
+    XSetWindowBackground(dpy, win, BACKGROUND_COLOR);
+    XSetForeground(dpy, gc, TEXT_COLOR);
     XClearWindow(dpy, win);
-	
+    
+    int screen = DefaultScreen(dpy);
+    int bar_width = DisplayWidth(dpy, screen);
+    int text_y = 18;
+    const int left_pixel_margin = 10;
 
-	snprintf(buf, sizeof(buf),
-			"%s %s Vol:%s %s %s %s RAM %s %s %s ",
-			s->workspace,
-			BAR_SPACER,
-			s->volume,
-			BAR_SPACER,
-			s->ipv4,
-			BAR_SPACER,
-			s->ram,
-			BAR_SPACER,
-			s->datetime
-			);
+    // ==== 1. LEFT BUFFER (Solo Workspace) ====
+    char left_buffer[256];
+    snprintf(left_buffer, sizeof(left_buffer), "%s", s->workspace);
 
     XftDrawStringUtf8(
-        xft_draw,
-        &xft_color,
-        xft_font,
-        10,
-        18,
-        (FcChar8 *)buf,
-        strlen(buf)
+        xft_draw, &xft_color, xft_font,
+        left_pixel_margin,
+        text_y,
+        (FcChar8 *)left_buffer, strlen(left_buffer)
+    );
+
+    // ==== 2. CENTRE BUFFER (Commentato) ====
+    /*
+    char center_buffer[256];
+    // ...
+    */
+
+    // ==== 3. RIGHT BUFFER (Moduli Hardware + Data) ====
+    char right_buffer[512];
+    snprintf(
+        right_buffer, sizeof(right_buffer),
+        "Vol: %s %s IP: %s %s %s %s %s",
+        s->volume,
+        BAR_SPACER,
+        s->ipv4,
+        BAR_SPACER,
+        s->ram,
+        BAR_SPACER,
+        s->datetime
+    );
+
+    // FORZATURA DI TEST: Mettiamo il blocco destro a partire da metà schermo esatta
+    int right_pixel_margin = bar_width / 2.28;
+
+    XftDrawStringUtf8(
+        xft_draw, &xft_color, xft_font,
+        right_pixel_margin, // Stampato a metà schermo!
+        text_y,
+        (FcChar8 *)right_buffer, strlen(right_buffer)
     );
 
     XFlush(dpy);
 }
+
+
 
 /*============ bar modules =============*/
 
