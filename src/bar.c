@@ -151,7 +151,7 @@ void draw_bar(Display *dpy, Window win, GC gc, BarState *s)
     int text_y = 18;
     int padding = 10;
 
-    // ===== GET REAL WINDOW WIDTH (IMPORTANTISSIMO) =====
+	//get the window width
     XWindowAttributes wa;
     XGetWindowAttributes(dpy, win, &wa);
     int bar_width = wa.width;
@@ -198,7 +198,7 @@ void build_layout(BarState *s, BarLayout *l)
     snprintf(l->left, sizeof(l->left),
              "%s", s->workspace);
 
-    // RIGHT (safe guard)
+    // RIGHT 
     snprintf(l->right, sizeof(l->right),
              "Vol:%s%s%s%sRAM %s%s%s",
              s->volume[0] ? s->volume : "?",
@@ -402,7 +402,7 @@ update_workspaces(int query_sock, BarState *s)
 		//get the real workspace number
         int num = atoi(name); 
 
-        // Salva nella lista temporanea
+		// save in the temporary list
         ws_list[ws_count].num = num;
         ws_list[ws_count].focused = focused;
         strcpy(ws_list[ws_count].name, name);
@@ -428,7 +428,7 @@ update_workspaces(int query_sock, BarState *s)
     for (int i = 0; i < ws_count; i++) {
         char tmp[128];
         if (ws_list[i].focused)
-            snprintf(tmp, sizeof(tmp), "[%s] ", ws_list[i].name);
+            snprintf(tmp, sizeof(tmp), "%s%s%s ",ACTIVE_WS_L_BRACKET,ws_list[i].name,ACTIVE_WS_R_BRACKET);
         else
             snprintf(tmp, sizeof(tmp), "%s ", ws_list[i].name);
 

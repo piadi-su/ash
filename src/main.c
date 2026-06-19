@@ -1,3 +1,18 @@
+/*
+ * ash - simple X11/i3 status bar
+ *
+ * A small status bar implemented with Xlib and Xft.
+ * Uses i3 IPC for workspace information and periodically
+ * updates system status (time, RAM, volume, network).
+ *
+ * The program runs a single event loop using select(2)
+ * over X11 connection and i3 IPC socket.
+ *
+ * Built directly on X11 (Xlib + Xft) without GUI toolkits.
+ * 
+ */
+
+
 #include <X11/X.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -130,13 +145,12 @@ int main(void)
 			char magic[6];
 			uint32_t r_len = 0, r_type = 0;
 
-			// Leggiamo l'header in modo atomico
+			//read the header
 			if (read_full(i3_event_sock, magic, 6) == 0) {
 				if (read_full(i3_event_sock, &r_len, 4) == 0 &&
 						read_full(i3_event_sock, &r_type, 4) == 0) {
 
-					// Svuotiamo SEMPRE il payload associato a questo messaggio,
-					// altrimenti il socket si disallinea e smette di funzionare!
+					// Always free the Payload
 					if (r_len > 0) {
 						char *ev_j = malloc(r_len);
 						if (ev_j) {
@@ -145,7 +159,7 @@ int main(void)
 						}
 					}
 
-					// Eseguiamo l'interrogazione dei workspace sul socket di query
+					//get worksapce
 					update_workspaces(i3_query_sock, &s);
 					redraw = 1;
 				}
