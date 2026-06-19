@@ -139,156 +139,75 @@ set_dock_properties(Display *dpy, Window win, int width)
 
 
 //make the bar  
-// void 
-// draw_bar(Display *dpy, Window win, GC gc, BarState *s)
-// {
-//
-// 	XSetWindowBackground(dpy, win, BACKGROUND_COLOR);
-//
-// 	XSetForeground(dpy, gc, TEXT_COLOR);
-//
-//     XClearWindow(dpy, win);
-//
-// 	//centred text font alignement 
-// 	int text_y = 18;
-//
-//
-// 	//ofsets
-// 	const int left_pixel_margin = 10;
-//
-// 	// const int centre_pixel_margin= 0;
-//
-// 	const int right_pixel_margin = 0;
-//
-//
-//
-// 	XGlyphInfo extents;
-//
-// 	// ==== left buffer ====
-// 	char left_buffer[256];
-//
-// 	snprintf(
-// 			left_buffer,sizeof(left_buffer),
-// 			"%s",
-// 			s->workspace
-// 			);
-//
-//
-//     XftDrawStringUtf8(
-//         xft_draw,
-//         &xft_color,
-//         xft_font,
-//         left_pixel_margin,
-//         text_y,
-//         (FcChar8 *)left_buffer,
-//         strlen(left_buffer)
-//     );
-//
-// 	// ==== centre buffer ====
-//
-// 	// char center_buffer[256];
-// 	//
-// 	// snprintf(
-// 	// 		center_buffer,sizeof(center_buffer),
-// 	// 		"",
-// 	//
-// 	// 		);
-// 	// XftDrawStringUtf8(
-// 	// 		xft_draw,
-// 	// 		&xft_color,
-// 	// 		xft_font,
-// 	// 		centre_pixel_margin,
-// 	// 		text_y,
-// 	// 		(FcChar8 *)center_buffer,
-// 	// 		strlen(center_buffer)
-// 	// 		);
-//
-// 	// ==== right buffer ====
-//
-// 	char right_buffer[512];
-//
-// 	snprintf(
-// 			right_buffer, sizeof(right_buffer),
-// 			"Vol: %s %s IP: %s %s %s %s %s",
-// 			s->volume,
-// 			BAR_SPACER,
-// 			s->ipv4,
-// 			BAR_SPACER,
-// 			s->ram,
-// 			BAR_SPACER,
-// 			s->datetime
-// 			);
-//
-// 	XftDrawStringUtf8(
-// 			xft_draw,
-// 			&xft_color,
-// 			xft_font,
-// 			right_pixel_margin,
-// 			text_y,
-// 			(FcChar8 *)right_buffer,
-// 			strlen(right_buffer)
-// 			);
-//
-//
-//     XFlush(dpy);
-// }
-
-
-
-void 
-draw_bar(Display *dpy, Window win, GC gc, BarState *s)
+void draw_bar(Display *dpy, Window win, GC gc, BarState *s)
 {
+    BarLayout l;
+    build_layout(s, &l);
+
     XSetWindowBackground(dpy, win, BACKGROUND_COLOR);
     XSetForeground(dpy, gc, TEXT_COLOR);
     XClearWindow(dpy, win);
-    
-    int screen = DefaultScreen(dpy);
-    int bar_width = DisplayWidth(dpy, screen);
+
     int text_y = 18;
-    const int left_pixel_margin = 10;
+    int padding = 10;
 
-    // ==== 1. LEFT BUFFER (Solo Workspace) ====
-    char left_buffer[256];
-    snprintf(left_buffer, sizeof(left_buffer), "%s", s->workspace);
+    // ===== GET REAL WINDOW WIDTH (IMPORTANTISSIMO) =====
+    XWindowAttributes wa;
+    XGetWindowAttributes(dpy, win, &wa);
+    int bar_width = wa.width;
 
+    // ================= LEFT =================
     XftDrawStringUtf8(
-        xft_draw, &xft_color, xft_font,
-        left_pixel_margin,
+        xft_draw,
+        &xft_color,
+        xft_font,
+        padding,
         text_y,
-        (FcChar8 *)left_buffer, strlen(left_buffer)
+        (FcChar8 *)l.left,
+        strlen(l.left)
     );
 
-    // ==== 2. CENTRE BUFFER (Commentato) ====
-    /*
-    char center_buffer[256];
-    // ...
-    */
-
-    // ==== 3. RIGHT BUFFER (Moduli Hardware + Data) ====
-    char right_buffer[512];
-    snprintf(
-        right_buffer, sizeof(right_buffer),
-        "Vol: %s %s IP: %s %s %s %s %s",
-        s->volume,
-        BAR_SPACER,
-        s->ipv4,
-        BAR_SPACER,
-        s->ram,
-        BAR_SPACER,
-        s->datetime
+    // ================= RIGHT =================
+    XGlyphInfo ext;
+    XftTextExtentsUtf8(
+        dpy,
+        xft_font,
+        (FcChar8 *)l.right,
+        strlen(l.right),
+        &ext
     );
 
-    // FORZATURA DI TEST: Mettiamo il blocco destro a partire da metà schermo esatta
-    int right_pixel_margin = bar_width / 2.28;
+    int right_x = bar_width - ext.xOff - padding;
 
     XftDrawStringUtf8(
-        xft_draw, &xft_color, xft_font,
-        right_pixel_margin, // Stampato a metà schermo!
+        xft_draw,
+        &xft_color,
+        xft_font,
+        right_x,
         text_y,
-        (FcChar8 *)right_buffer, strlen(right_buffer)
+        (FcChar8 *)l.right,
+        strlen(l.right)
     );
 
     XFlush(dpy);
+}
+
+void build_layout(BarState *s, BarLayout *l)
+{
+    // LEFT
+    snprintf(l->left, sizeof(l->left),
+             "%s", s->workspace);
+
+    // RIGHT (safe guard)
+    snprintf(l->right, sizeof(l->right),
+             "Vol:%s%s%s%sRAM %s%s%s",
+             s->volume[0] ? s->volume : "?",
+			 BAR_SPACER,
+             s->ipv4[0] ? s->ipv4 : "?",
+			 BAR_SPACER,
+             s->ram[0] ? s->ram : "?",
+			 BAR_SPACER,
+             s->datetime[0] ? s->datetime : "?");
 }
 
 
