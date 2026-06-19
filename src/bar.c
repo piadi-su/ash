@@ -189,18 +189,18 @@ update_ram(BarState *s)
 {
     FILE *f = fopen("/proc/meminfo", "r");
 
-    long total = 0, free = 0;
+    long total = 0, free_ram = 0;
     char line[128];
 
     while (fgets(line, sizeof(line), f))
     {
         if (sscanf(line, "MemTotal: %ld kB", &total) == 1) continue;
-        if (sscanf(line, "MemAvailable: %ld kB", &free) == 1) continue;
+        if (sscanf(line, "MemAvailable: %ld kB", &free_ram) == 1) continue;
     }
 
     fclose(f);
 
-    long used = total - free;
+    long used = total - free_ram;
 
     snprintf(s->ram, sizeof(s->ram),
              "RAM %ldMB", used / 1024);
