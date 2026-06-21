@@ -49,7 +49,7 @@ int main(void)
     i3_event_sock = connect_i3_ipc();
     i3_query_sock = connect_i3_ipc();
     if (i3_event_sock < 0 || i3_query_sock < 0) {
-        fprintf(stderr, "Impossibile connettersi a i3 IPC!\n");
+        fprintf(stderr, "can't connect to the i3ipc\n");
         return 1;
     }
     
