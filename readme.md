@@ -49,4 +49,5 @@ Restart ash after rebuilding.
 
 ## License
 
-Released under the MIT License.
+Released under the GPLv3 (or later) License.
+
